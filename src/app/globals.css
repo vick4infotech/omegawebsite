@@ -1,0 +1,66 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --brand-purple: #6D28D9;
+  --brand-magenta: #FD3CF9;
+  --brand-navy: #161F6C;
+  --brand-blue: #3985B9;
+  --brand-green: #93BD38;
+  --brand-orange: #FF9C02;
+  --brand-red: #AB2E2E;
+
+  --bg: #0b0b13;
+  --card: rgba(255,255,255,0.06);
+  --border: rgba(255,255,255,0.10);
+  --text: rgba(255,255,255,0.92);
+  --muted: rgba(255,255,255,0.70);
+}
+
+html, body {
+  height: 100%;
+}
+
+body {
+  background:
+    radial-gradient(900px 500px at 10% 0%, rgba(109, 40, 217, 0.35), transparent 60%),
+    radial-gradient(700px 450px at 90% 10%, rgba(57, 133, 185, 0.25), transparent 60%),
+    radial-gradient(700px 450px at 50% 110%, rgba(147, 189, 56, 0.18), transparent 60%),
+    var(--bg);
+  color: var(--text);
+}
+
+*:focus-visible {
+  outline: 3px solid rgba(253, 60, 249, 0.55);
+  outline-offset: 3px;
+  border-radius: 12px;
+}
+
+.container {
+  @apply mx-auto w-full max-w-6xl px-4;
+}
+
+.card {
+  @apply rounded-2xl border border-white/10 bg-white/5 shadow-[0_1px_0_rgba(255,255,255,0.06)] backdrop-blur;
+}
+
+.btn {
+  @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2 font-medium transition;
+}
+
+.btn-primary {
+  @apply btn bg-[color:var(--brand-purple)] text-white hover:opacity-90;
+}
+
+.btn-secondary {
+  @apply btn border border-white/15 bg-white/5 text-white hover:bg-white/10;
+}
+
+.chip {
+  @apply inline-flex items-center rounded-full border border-white/15 bg-white/5 px-3 py-1 text-sm text-white/90 hover:bg-white/10;
+}
+
+.link {
+  @apply underline decoration-white/20 underline-offset-4 hover:decoration-white/50;
+}
