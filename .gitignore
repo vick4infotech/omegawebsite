@@ -1,7 +1,7 @@
 node_modules
 .next
+out
 .DS_Store
 *.log
-dev.db
-dev.db-journal
-.env.local
+*.zip
+.next/

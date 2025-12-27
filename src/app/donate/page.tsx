@@ -1,138 +1,131 @@
-  import type { Metadata } from "next";
-  import Script from "next/script";
-  import Image from "next/image";
-  import { DonationWidget } from "@/components/donation-widget";
-  import { Section } from "@/components/section";
-  import { getCauseBySlug, causes } from "@/lib/utils";
+import type { Metadata } from "next";
+import Image from "next/image";
+import Link from "next/link";
 
-  export const metadata: Metadata = {
-    title: "Donate",
-    description: "Donate to Omega Global Development (OGD) via Stripe Checkout.",
-  };
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { DonateReviewActions } from "@/components/sections/donate-review-actions";
+import { DonationModule } from "@/components/sections/donation-module";
+import { getProject, getCountry, getInitiative, site } from "@/config/site";
 
-  export default function DonatePage({
-    searchParams,
-  }: {
-    searchParams?: { cause?: string };
-  }) {
-    const preselected = getCauseBySlug(searchParams?.cause).slug;
+export const metadata: Metadata = {
+  title: "Donate",
+  description: `Support ${site.name} programs with a one-time or monthly gift (demo flow).`,
+};
 
-    const orgJsonLd = {
-      "@context": "https://schema.org",
-      "@type": "Organization",
-      name: "Omega Global Development (OGD)",
-      url: "http://localhost:3000",
-      logo: "http://localhost:3000/brand/logo.jpg",
-      address: {
-        "@type": "PostalAddress",
-        postOfficeBoxNumber: "22126",
-        addressLocality: "Beachwood",
-        addressRegion: "OH",
-        postalCode: "44122",
-        addressCountry: "US",
-      },
-    };
+function parseAmount(value: unknown) {
+  const n = typeof value === "string" ? Number(value) : NaN;
+  return Number.isFinite(n) && n > 0 ? Math.round(n) : 25;
+}
 
-    const donateJsonLd = {
-      "@context": "https://schema.org",
-      "@type": "DonateAction",
-      name: "Donate to Omega Global Development (OGD)",
-      target: {
-        "@type": "EntryPoint",
-        urlTemplate: "http://localhost:3000/donate",
-        actionPlatform: ["http://schema.org/DesktopWebPlatform", "http://schema.org/MobileWebPlatform"],
-      },
-    };
+function parseFrequency(value: unknown): "one-time" | "monthly" {
+  return value === "monthly" ? "monthly" : "one-time";
+}
 
-    return (
-      <>
-        <Script id="jsonld-org" type="application/ld+json">
-          {JSON.stringify(orgJsonLd)}
-        </Script>
-        <Script id="jsonld-donate" type="application/ld+json">
-          {JSON.stringify(donateJsonLd)}
-        </Script>
+export default function DonatePage({
+  searchParams,
+}: {
+  searchParams?: { [key: string]: string | string[] | undefined };
+}) {
+  const amount = parseAmount(searchParams?.amount);
+  const frequency = parseFrequency(searchParams?.frequency);
+  const projectSlug = typeof searchParams?.project === "string" ? searchParams?.project : undefined;
+  const project = projectSlug ? getProject(projectSlug) : undefined;
 
-        <section className="container pt-10">
-          <div className="grid gap-8 md:grid-cols-12 md:items-start">
-            <div className="md:col-span-7">
-              <h1 className="text-3xl font-semibold md:text-4xl">Donate</h1>
-              <p className="mt-3 max-w-2xl text-white/75">
-                Direct your gift to a cause and support restoration, empowerment, and sustainability.
+  return (
+    <main className="container py-12">
+      <div className="grid gap-10 lg:grid-cols-[1.15fr_.85fr]">
+        <div>
+          <p className="text-xs font-semibold text-muted-foreground">Donate</p>
+          <h1 className="mt-2 text-4xl font-black tracking-tight">Give with purpose</h1>
+          <p className="mt-4 max-w-2xl text-muted-foreground">
+            This page demonstrates a donation flow. No payment is processed here.
+            When you’re ready, connect a real payment provider or use the external donate form.
+          </p>
+
+          <div className="mt-8 grid gap-5 md:grid-cols-2">
+            <Card className="rounded-3xl bg-card/70 p-6 shadow-sm backdrop-blur">
+              <p className="text-xs font-semibold text-muted-foreground">Your selection</p>
+              <div className="mt-3 flex flex-wrap items-center gap-2">
+                <Badge variant="secondary">${amount}</Badge>
+                <Badge variant="outline">{frequency === "monthly" ? "Monthly" : "One-time"}</Badge>
+                {project ? (
+                  <Badge className="bg-primary/10 text-primary hover:bg-primary/10">
+                    {getInitiative(project.initiative).name}
+                  </Badge>
+                ) : null}
+                {project ? <Badge variant="secondary">{getCountry(project.country).name}</Badge> : null}
+              </div>
+
+              {project ? (
+                <div className="mt-4 rounded-2xl border bg-background p-4">
+                  <p className="text-sm font-semibold">{project.title}</p>
+                  <p className="mt-1 text-sm text-muted-foreground">{project.summary}</p>
+                  <Link
+                    href={`/projects/${project.slug}`}
+                    className="mt-3 inline-flex text-sm font-semibold text-primary"
+                  >
+                    View project details →
+                  </Link>
+                </div>
+              ) : null}
+
+              <div className="mt-5 flex flex-col gap-3">
+                <DonateReviewActions amount={amount} frequency={frequency} projectSlug={projectSlug} />
+                <Button asChild className="rounded-2xl">
+                  <a href={site.donateExternalUrl} target="_blank" rel="noreferrer">
+                    Continue on external donate page
+                  </a>
+                </Button>
+              </div>
+              <p className="mt-4 text-xs text-muted-foreground">
+                Payment integration placeholder. Replace with Stripe, PayPal, or your preferred provider.
               </p>
+            </Card>
 
-              <div className="mt-6 card overflow-hidden">
-                <div className="relative aspect-[16/9] w-full">
-                  <Image
-                    src="/works/photorealistic-kid-refugee-camp.jpg"
-                    alt="Child in community setting"
-                    fill
-                    className="object-cover"
-                    priority
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/15 to-transparent" />
-                  <div className="absolute bottom-0 left-0 right-0 p-5">
-                    <div className="text-sm font-semibold">{getCauseBySlug(preselected).name}</div>
-                    <div className="mt-1 text-sm text-white/75">
-                      {getCauseBySlug(preselected).description}
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <Section title="Bank Transfer / ACH (Coming Soon)" eyebrow="Integration later" className="px-0">
-                <div className="card p-6">
-                  <p className="text-sm text-white/75">
-                    We plan to support additional donation methods, including bank transfer / ACH.
-                  </p>
-                  <ul className="mt-4 list-disc space-y-2 pl-5 text-sm text-white/70">
-                    <li>
-                      Stripe ACH / bank debits integration hook (not implemented yet).
-                      <pre className="mt-2 overflow-x-auto rounded-xl border border-white/10 bg-black/30 p-3 text-xs text-white/75">
-{`// TODO: Implement Stripe ACH / bank debits
-// 1) Collect donor bank details via Stripe Financial Connections
-// 2) Create and confirm ACH payment method
-// 3) Attach to a customer + store verification status in DB`}
-                      </pre>
-                    </li>
-                    <li>
-                      Manual bank transfer instructions + proof upload flow hook (not implemented yet).
-                      <pre className="mt-2 overflow-x-auto rounded-xl border border-white/10 bg-black/30 p-3 text-xs text-white/75">
-{`// TODO: Manual transfer flow
-// 1) Show bank details + reference code
-// 2) Allow upload of payment proof (e.g., receipt)
-// 3) Admin review screen to mark donation as confirmed`}
-                      </pre>
-                    </li>
-                  </ul>
-                </div>
-              </Section>
-            </div>
-
-            <div className="md:col-span-5">
-              <DonationWidget initialCause={preselected} />
-              <div className="mt-4 grid gap-3">
-                <div className="card p-5">
-                  <div className="text-sm font-semibold">Causes</div>
-                  <div className="mt-3 grid gap-2 text-sm text-white/75">
-                    {causes.map((c) => (
-                      <div key={c.slug} className="flex items-center justify-between gap-3">
-                        <span>{c.name}</span>
-                        <span className="text-xs text-white/55">{c.slug}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-                <div className="card p-5">
-                  <div className="text-sm font-semibold">Tax-deductible</div>
-                  <p className="mt-2 text-sm text-white/75">
-                    Omega Global Development is a 501(c)(3) nonprofit organization.
+            <Card className="relative overflow-hidden rounded-3xl bg-card/70 shadow-sm backdrop-blur">
+              <div className="relative aspect-[4/5]">
+                <Image
+                  src={project?.heroImage ?? "/assets/hero.jpg"}
+                  alt="Donation hero"
+                  fill
+                  sizes="(max-width: 1024px) 100vw, 40vw"
+                  className="object-cover"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/20 to-transparent" />
+                <div className="absolute bottom-0 p-6">
+                  <p className="text-xs font-semibold text-white/70">Your support helps</p>
+                  <h2 className="mt-2 text-2xl font-bold text-white">Restore dignity, build sustainable impact</h2>
+                  <p className="mt-2 text-sm text-white/85">
+                    Education, maternal health, leadership development, and resilient livelihoods across Africa.
                   </p>
                 </div>
               </div>
-            </div>
+            </Card>
           </div>
-        </section>
-      </>
-    );
-  }
+        </div>
+
+        <div className="space-y-6">
+          <Card className="rounded-3xl bg-card/70 p-6 shadow-sm backdrop-blur">
+            <p className="text-xs font-semibold text-muted-foreground">Donate here</p>
+            <h2 className="mt-2 text-lg font-semibold">Adjust your gift</h2>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Prefer not to use the modal? Use this module to adjust and reload this page with updated query parameters.
+            </p>
+            <div className="mt-4">
+              <DonationModule projectSlug={projectSlug} />
+            </div>
+          </Card>
+
+          <Card className="rounded-3xl bg-card/70 p-6 shadow-sm backdrop-blur">
+            <p className="text-xs font-semibold text-muted-foreground">Need help?</p>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Email <span className="font-semibold text-foreground">{site.contact.email}</span> for partnership or donation questions.
+            </p>
+          </Card>
+        </div>
+      </div>
+    </main>
+  );
+}

@@ -1,55 +1,54 @@
-import type { Metadata, Viewport } from "next";
+import type { Metadata } from "next";
+
 import "./globals.css";
-import { SiteHeader } from "@/components/site-header";
-import { SiteFooter } from "@/components/site-footer";
-import { Providers } from "@/app/providers";
+
+import { site } from "@/config/site";
+import { ThemeProvider } from "@/components/layout/theme-provider";
+import { SmoothScroll } from "@/components/layout/smooth-scroll";
+import { DonationProvider } from "@/components/layout/donation-context";
+import { Navbar } from "@/components/layout/navbar";
+import { Footer } from "@/components/layout/footer";
+import { PageTransition } from "@/components/layout/page-transition";
 
 export const metadata: Metadata = {
-  metadataBase: new URL("http://localhost:3000"),
   title: {
-    default: "Omega Global Development (OGD)",
-    template: "%s | Omega Global Development (OGD)",
+    default: site.name,
+    template: `%s | ${site.name}`,
   },
-  description:
-    "Omega Global Development (OGD) is a faith-based development organization investing in African communities through restoration, empowerment, and sustainability.",
+  description: site.description,
+  metadataBase: new URL("https://www.omegaglobaldevelopment.org"),
   openGraph: {
-    title: "Omega Global Development (OGD)",
-    description:
-      "A faith-based development organization investing in African communities through restoration, empowerment, and sustainability.",
+    title: site.name,
+    description: site.description,
+    url: "/",
+    siteName: site.name,
+    images: [{ url: "/assets/hero.jpg", width: 1200, height: 630, alt: site.tagline }],
+    locale: "en_US",
     type: "website",
-    images: [{ url: "/og.png", width: 1200, height: 630, alt: "OGD" }],
   },
   twitter: {
     card: "summary_large_image",
-    images: ["/og.png"],
+    title: site.name,
+    description: site.description,
+    images: ["/assets/hero.jpg"],
   },
-  icons: {
-    icon: "/favicon.ico",
-  },
-};
-
-export const viewport: Viewport = {
-  themeColor: "#6D28D9",
-  colorScheme: "dark",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
-      <body>
-        <a
-          href="#content"
-          className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-xl focus:bg-black/80 focus:px-4 focus:py-2"
-        >
-          Skip to content
-        </a>
-        <Providers>
-          <SiteHeader />
-        <main id="content" className="pb-20">
-          {children}
-        </main>
-        <SiteFooter />
-        </Providers>
+    <html lang="en" suppressHydrationWarning>
+      <body className="ogd-grain min-h-screen bg-background font-sans text-foreground antialiased">
+        <ThemeProvider>
+          <SmoothScroll>
+            <DonationProvider>
+              <Navbar />
+              <PageTransition>
+                <main className="min-h-[70vh]">{children}</main>
+              </PageTransition>
+              <Footer />
+            </DonationProvider>
+          </SmoothScroll>
+        </ThemeProvider>
       </body>
     </html>
   );
